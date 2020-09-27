@@ -110,10 +110,10 @@ func getParameterStore() ([]string, error) {
 			return nil, err
 		}
 		for i := 0; i < len(result.Parameters); i++ {
-			if strings.Contains(strings.SplitN(strings.SplitN(result.Parameters[i].GoString(), ",", 6)[2], ":", 2)[1], constLayer) || strings.Contains(strings.SplitN(strings.SplitN(result.Parameters[i].GoString(), ",", 6)[2], ":", 2)[1], layerVer) {
+			if strings.Contains(strings.SplitN(strings.SplitN(result.Parameters[i].GoString(), ",", 6)[3], ":", 2)[1], constLayer) || strings.Contains(strings.SplitN(strings.SplitN(result.Parameters[i].GoString(), ",", 6)[3], ":", 2)[1], layerVer) {
 				continue
 			}
-			params = append(params, strings.SplitN(strings.SplitN(result.Parameters[i].GoString(), ",", 6)[2], ":", 2)[1]+"\n")
+			params = append(params, strings.SplitN(strings.SplitN(result.Parameters[i].GoString(), ",", 6)[3], ":", 2)[1]+"\n")
 		}
 		if result.NextToken == nil {
 			break
@@ -129,15 +129,15 @@ func getServiceParameter(parameterList []string) map[string][]string {
 	a := make(map[string][]string)
 	var Service string
 	for i := 0; i < len(parameterList); i++ {
-		Service = strings.SplitN(parameterList[i], "/", 6)[3]
-		a[Service] = append(a[Service], strings.Replace((strings.SplitN(parameterList[i], "/", 6)[5]), "\"", "", 1))
+		Service = strings.SplitN(parameterList[i], "/", 5)[3]
+		a[Service] = append(a[Service], strings.Replace((strings.SplitN(parameterList[i], "/", 5)[4]), "\"", "", 1))
 	}
 	// fmt.Println(a[Service])
 	return a
 }
 
 func getParameterValue(i, j string) (string, error) {
-	queryPath := "/Cloud/prod/" + i + "/prod/" + j
+	queryPath := "/Cloud/prod/" + i + "/" + j
 
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -165,7 +165,7 @@ func changeParameterStore(changeList map[int][]string) {
 	svc := ssm.New(sess)
 	for i := 0; i < len(changeList); i++ {
 		putParameterDetail := &ssm.PutParameterInput{
-			Name:      aws.String("/Cloud/prod/" + changeList[i][0] + "/prod/" + changeList[i][1]),
+			Name:      aws.String("/Cloud/prod/" + changeList[i][0] + "/" + changeList[i][1]),
 			Overwrite: aws.Bool(true),
 			Value:     aws.String(changeList[i][2]),
 			Type:      aws.String("String"),
